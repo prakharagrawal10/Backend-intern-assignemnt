@@ -1,0 +1,12 @@
+# Node
+node_modules/
+.env
+leave_mgmt.db
+*.log
+.DS_Store
+/dist
+/public/*.log
+coverage/
+.vscode/
+*.sqlite
+npm-debug.log*

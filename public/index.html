@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leave Management System</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; background: #f7f7f7; }
+    h1 { color: #2c3e50; }
+    form, .section { background: #fff; padding: 1rem; margin-bottom: 2rem; border-radius: 8px; box-shadow: 0 2px 8px #0001; }
+    label { display: block; margin-top: 1em; }
+    input, select, button { margin-top: 0.5em; padding: 0.5em; border-radius: 4px; border: 1px solid #ccc; }
+    button { background: #3498db; color: #fff; border: none; cursor: pointer; }
+    button:hover { background: #217dbb; }
+    .result { margin-top: 1em; color: #27ae60; }
+    .error { color: #c0392b; }
+  </style>
+</head>
+<body>
+  <h1>Leave Management System</h1>
+
+  <div id="loginSection" class="section">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <label>Username: <input type="text" name="username" required></label>
+      <label>Password: <input type="password" name="password" required></label>
+      <button type="submit">Login</button>
+      <div class="result" id="loginResult"></div>
+    </form>
+  </div>
+
+  <div id="employeeSection" style="display:none">
+    <div class="section">
+      <h2>Apply for Leave</h2>
+      <form id="applyLeaveForm">
+        <label>Start Date: <input type="date" name="start_date" required></label>
+        <label>End Date: <input type="date" name="end_date" required></label>
+        <label>Reason: <input type="text" name="reason"></label>
+        <button type="submit">Apply</button>
+        <div class="result" id="applyLeaveResult"></div>
+      </form>
+    </div>
+    <div class="section">
+      <h2>Check Leave Balance</h2>
+      <button id="checkBalanceBtn">Check Balance</button>
+      <div class="result" id="checkBalanceResult"></div>
+    </div>
+    <div class="section">
+      <h2>My Leave Requests</h2>
+      <button id="refreshMyLeavesBtn">Refresh List</button>
+      <div id="myLeavesList"></div>
+    </div>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <div id="hrSection" style="display:none">
+    <div class="section">
+      <h2>Add Employee</h2>
+      <form id="addEmployeeForm">
+        <label>Name: <input type="text" name="name" required></label>
+        <label>Email: <input type="email" name="email" required></label>
+        <label>Department: <input type="text" name="department" required></label>
+        <label>Joining Date: <input type="date" name="joining_date" required></label>
+        <button type="submit">Add Employee</button>
+        <div class="result" id="addEmployeeResult"></div>
+      </form>
+    </div>
+    <div class="section">
+      <h2>Pending Leave Requests</h2>
+      <button id="refreshPendingBtn">Refresh List</button>
+      <div id="pendingLeavesList"></div>
+    </div>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+
+    // --- Auth & Role-based UI ---
+    const API_BASE = 'http://localhost:4000';
+    let token = localStorage.getItem('token') || '';
+    let role = localStorage.getItem('role') || '';
+    let employeeId = localStorage.getItem('employeeId') || '';
+
+    function showSection() {
+      document.getElementById('loginSection').style.display = token ? 'none' : '';
+      document.getElementById('employeeSection').style.display = (token && role === 'employee') ? '' : 'none';
+      document.getElementById('hrSection').style.display = (token && role === 'hr') ? '' : 'none';
+    }
+    showSection();
+
+    document.getElementById('loginForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(this));
+      showResult('loginResult', '');
+      try {
+        const res = await fetch(API_BASE + '/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        if (res.ok) {
+          token = json.token;
+          role = json.role;
+          employeeId = json.employee || '';
+          localStorage.setItem('token', token);
+          localStorage.setItem('role', role);
+          localStorage.setItem('employeeId', employeeId);
+          showSection();
+        } else {
+          showResult('loginResult', json.error || 'Error', true);
+        }
+      } catch (err) {
+        showResult('loginResult', 'Network error', true);
+      }
+    };
+
+    function logout() {
+      token = '';
+      role = '';
+      employeeId = '';
+      localStorage.clear();
+      showSection();
+    }
+
+    // --- HR Section ---
+    async function loadPendingLeaves() {
+      const listDiv = document.getElementById('pendingLeavesList');
+      listDiv.innerHTML = 'Loading...';
+      try {
+        const res = await fetch(API_BASE + '/leaves/pending', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const leaves = await res.json();
+        if (!Array.isArray(leaves)) {
+          listDiv.innerHTML = 'Error loading leaves.';
+          return;
+        }
+        if (leaves.length === 0) {
+          listDiv.innerHTML = 'No pending leave requests.';
+          return;
+        }
+        listDiv.innerHTML = '<table style="width:100%;border-collapse:collapse"><tr><th>ID</th><th>Employee</th><th>Dates</th><th>Reason</th><th>Action</th></tr>' +
+          leaves.map(l => `<tr>
+            <td>${l._id}</td>
+            <td>${l.employee_id?.name || ''} <br> <small>${l.employee_id?.email || ''}</small></td>
+            <td>${l.start_date?.slice(0,10)} to ${l.end_date?.slice(0,10)}</td>
+            <td>${l.reason || ''}</td>
+            <td>
+              <button onclick="approveLeave('${l._id}')">Approve</button>
+              <button onclick="rejectLeave('${l._id}')">Reject</button>
+            </td>
+          </tr>`).join('') + '</table>';
+      } catch (err) {
+        listDiv.innerHTML = 'Network error.';
+      }
+    }
+    document.getElementById('refreshPendingBtn').onclick = loadPendingLeaves;
+
+    document.getElementById('addEmployeeForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(this));
+      showResult('addEmployeeResult', '');
+      try {
+        const res = await fetch(API_BASE + '/employees', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        if (res.ok) {
+          showResult('addEmployeeResult', 'Employee added! ID: ' + json._id);
+        } else {
+          showResult('addEmployeeResult', json.error || 'Error', true);
+        }
+      } catch (err) {
+        showResult('addEmployeeResult', 'Network error', true);
+      }
+    };
+
+    async function approveLeave(id) {
+      try {
+        const res = await fetch(API_BASE + `/leaves/${id}/approve`, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+        const json = await res.json();
+        alert(json.message || json.error || 'Done');
+        loadPendingLeaves();
+      } catch (err) {
+        alert('Network error');
+      }
+    }
+    async function rejectLeave(id) {
+      try {
+        const res = await fetch(API_BASE + `/leaves/${id}/reject`, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+        const json = await res.json();
+        alert(json.message || json.error || 'Done');
+        loadPendingLeaves();
+      } catch (err) {
+        alert('Network error');
+      }
+    }
+
+    // --- Employee Section ---
+    document.getElementById('applyLeaveForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(this));
+      data.employee_id = employeeId;
+      showResult('applyLeaveResult', '');
+      try {
+        const res = await fetch(API_BASE + '/leaves/apply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        if (res.ok) {
+          showResult('applyLeaveResult', 'Leave applied! ID: ' + json._id);
+        } else {
+          showResult('applyLeaveResult', json.error || 'Error', true);
+        }
+      } catch (err) {
+        showResult('applyLeaveResult', 'Network error', true);
+      }
+    };
+
+    document.getElementById('checkBalanceBtn').onclick = async function() {
+      showResult('checkBalanceResult', '');
+      try {
+        const res = await fetch(API_BASE + `/employees/${employeeId}/leave-balance`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const json = await res.json();
+        if (res.ok) {
+          showResult('checkBalanceResult', 'Leave Balance: ' + json.leave_balance);
+        } else {
+          showResult('checkBalanceResult', json.error || 'Error', true);
+        }
+      } catch (err) {
+        showResult('checkBalanceResult', 'Network error', true);
+      }
+    };
+
+    async function loadMyLeaves() {
+      const listDiv = document.getElementById('myLeavesList');
+      listDiv.innerHTML = 'Loading...';
+      try {
+        const res = await fetch(API_BASE + `/leaves/my`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const leaves = await res.json();
+        if (!Array.isArray(leaves)) {
+          listDiv.innerHTML = 'Error loading leaves.';
+          return;
+        }
+        if (leaves.length === 0) {
+          listDiv.innerHTML = 'No leave requests.';
+          return;
+        }
+        listDiv.innerHTML = '<table style="width:100%;border-collapse:collapse"><tr><th>ID</th><th>Dates</th><th>Status</th><th>Reason</th></tr>' +
+          leaves.map(l => `<tr>
+            <td>${l._id}</td>
+            <td>${l.start_date?.slice(0,10)} to ${l.end_date?.slice(0,10)}</td>
+            <td>${l.status}</td>
+            <td>${l.reason || ''}</td>
+          </tr>`).join('') + '</table>';
+      } catch (err) {
+        listDiv.innerHTML = 'Network error.';
+      }
+    }
+    document.getElementById('refreshMyLeavesBtn').onclick = loadMyLeaves;
+
+    // Auto-load lists on login
+    if (token && role === 'hr') loadPendingLeaves();
+    if (token && role === 'employee') loadMyLeaves();
+
+    function showResult(id, msg, isError = false) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.className = isError ? 'result error' : 'result';
+    }
+
+    document.getElementById('addEmployeeForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(this));
+      showResult('addEmployeeResult', '');
+      try {
+        const res = await fetch(API_BASE + '/employees', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        if (res.ok) {
+          showResult('addEmployeeResult', 'Employee added! ID: ' + json._id);
+        } else {
+          showResult('addEmployeeResult', json.error || 'Error', true);
+        }
+      } catch (err) {
+        showResult('addEmployeeResult', 'Network error', true);
+      }
+    };
+
+    document.getElementById('applyLeaveForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(this));
+      showResult('applyLeaveResult', '');
+      try {
+        const res = await fetch(API_BASE + '/leaves/apply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        if (res.ok) {
+          showResult('applyLeaveResult', 'Leave applied! ID: ' + json._id);
+        } else {
+          showResult('applyLeaveResult', json.error || 'Error', true);
+        }
+      } catch (err) {
+        showResult('applyLeaveResult', 'Network error', true);
+      }
+    };
+
+    document.getElementById('checkBalanceForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const id = this.employee_id.value;
+      showResult('checkBalanceResult', '');
+      try {
+        const res = await fetch(API_BASE + `/employees/${id}/leave-balance`);
+        const json = await res.json();
+        if (res.ok) {
+          showResult('checkBalanceResult', 'Leave Balance: ' + json.leave_balance);
+        } else {
+          showResult('checkBalanceResult', json.error || 'Error', true);
+        }
+      } catch (err) {
+        showResult('checkBalanceResult', 'Network error', true);
+      }
+    };
+
+    // HR Approve/Reject Leave
+    document.getElementById('approveBtn').onclick = async function() {
+      const leaveId = document.querySelector('#hrLeaveActionForm input[name="leave_id"]').value;
+      showResult('hrLeaveActionResult', '');
+      try {
+        const res = await fetch(API_BASE + `/leaves/${leaveId}/approve`, { method: 'POST' });
+        const json = await res.json();
+        if (res.ok) {
+          showResult('hrLeaveActionResult', json.message);
+        } else {
+          showResult('hrLeaveActionResult', json.error || 'Error', true);
+        }
+      } catch (err) {
+        showResult('hrLeaveActionResult', 'Network error', true);
+      }
+    };
+    document.getElementById('rejectBtn').onclick = async function() {
+      const leaveId = document.querySelector('#hrLeaveActionForm input[name="leave_id"]').value;
+      showResult('hrLeaveActionResult', '');
+      try {
+        const res = await fetch(API_BASE + `/leaves/${leaveId}/reject`, { method: 'POST' });
+        const json = await res.json();
+        if (res.ok) {
+          showResult('hrLeaveActionResult', json.message);
+        } else {
+          showResult('hrLeaveActionResult', json.error || 'Error', true);
+        }
+      } catch (err) {
+        showResult('hrLeaveActionResult', 'Network error', true);
+      }
+    };
+  </script>
+</body>
+</html>
