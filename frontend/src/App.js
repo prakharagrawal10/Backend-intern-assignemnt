@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-const API_BASE = 'http://localhost:4000';
+const API_BASE = 'https://leavebackend.onrender.com';
 
 function Navbar({ token, role, logout }) {
   return (
