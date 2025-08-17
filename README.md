@@ -1,39 +1,64 @@
-# Leave Management System (Node.js REST API)
+# Leave Management System
 
-## Setup Steps
-1. Run `npm install` to install dependencies.
-2. Start the server: `npm run dev` (for development) or `npm start` (for production).
+A full-stack Leave Management System with role-based access for HR and Employees.
 
 ## Features
-- Add employee
-- Apply for leave
-- Approve/Reject leave
-- Fetch leave balance
+- HR and Employee login/signup
+- Role-based UI (React)
+- Leave application, approval, and tracking
+- Employee management (HR)
+- JWT authentication
+- MongoDB database
+
+## Setup Steps
+
+### 1. Clone the repository
+```
+git clone <repo-url>
+cd "intern assignemnt"
+```
+
+### 2. Backend Setup
+```
+cd src
+npm install
+```
+- Create a `.env` file with:
+  ```
+  MONGODB_URI=<your-mongodb-uri>
+  JWT_SECRET=<your-secret>
+  PORT=4000
+  ```
+- Start the backend:
+```
+npm start
+```
+
+### 3. Frontend Setup
+```
+cd ../frontend
+npm install
+npm start
+```
+- The React app runs on http://localhost:3000
+- The backend runs on http://localhost:4000
 
 ## Assumptions
-- Each employee starts with 20 leave days per year.
-- Only HR can approve/reject leaves.
-- Email is unique for each employee.
-
-## Edge Cases Handled
-- Leave before joining date
-- Overlapping leave requests
-- Insufficient leave balance
-- Invalid dates
-- Employee not found
+- HR creates employee records before employee user accounts are created.
+- Only HR can add employees and approve/reject leaves.
+- Each employee has a unique Employee ID.
+- JWT is used for stateless authentication.
+- CORS is enabled for frontend-backend communication.
 
 ## Potential Improvements
-- Authentication & roles
-- Email notifications
-- Leave types (sick, casual, etc.)
-- Pagination for employee/leave lists
+- Add email notifications for leave status changes.
+- Add password reset and email verification.
+- Add pagination and search for employee/leave lists.
+- Add audit logs for HR actions.
+- Add file upload for supporting leave documents.
+- Add mobile responsiveness and improved UI/UX.
+- Add admin dashboard for analytics.
+- Deploy using Docker and CI/CD pipeline.
 
-## API Endpoints
-- `POST /employees` — Add employee
-- `POST /leaves/apply` — Apply for leave
-- `POST /leaves/:id/approve` — Approve leave
-- `POST /leaves/:id/reject` — Reject leave
-- `GET /employees/:id/leave-balance` — Get leave balance
-
-## HLD Diagram
-See `docs/hld-diagram.png` (to be added)
+## License
+MIT
