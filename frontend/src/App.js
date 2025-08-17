@@ -189,51 +189,85 @@ function App() {
   }, [token, role]);
 
   // --- UI ---
+  const [homeRole, setHomeRole] = useState('');
+
   return (
     <div style={{ maxWidth: 700, margin: '40px auto', fontFamily: 'Segoe UI, Arial, sans-serif', background: '#f8f9fa', borderRadius: 10, boxShadow: '0 2px 12px #0001', padding: 0 }}>
       <Navbar token={token} role={role} logout={logout} />
       <div style={{ padding: 32 }}>
         {!token && (
-          <div className="section">
-            <h2 style={{ color: '#2d3e50' }}>Login</h2>
-            <form onSubmit={handleLogin} style={{ marginBottom: 24 }}>
-              <label style={{ display: 'block', marginBottom: 8 }}>Username:<br />
-                <input type="text" value={loginData.username} onChange={e => setLoginData({ ...loginData, username: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
-              </label>
-              <label style={{ display: 'block', marginBottom: 8 }}>Password:<br />
-                <input type="password" value={loginData.password} onChange={e => setLoginData({ ...loginData, password: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
-              </label>
-              <button type="submit" style={{ background: '#2d3e50', color: 'white', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: 'pointer', marginTop: 8 }}>Login</button>
-              <div className="result" style={{ color: 'crimson', marginTop: 8 }}>{loginResult}</div>
-            </form>
-            <hr />
-            <h3 style={{ color: '#2d3e50' }}>Create HR User</h3>
-            <form onSubmit={handleCreateHr} style={{ marginBottom: 24 }}>
-              <label style={{ display: 'block', marginBottom: 8 }}>Username:<br />
-                <input type="text" value={hrData.username} onChange={e => setHrData({ ...hrData, username: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
-              </label>
-              <label style={{ display: 'block', marginBottom: 8 }}>Password:<br />
-                <input type="password" value={hrData.password} onChange={e => setHrData({ ...hrData, password: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
-              </label>
-              <button type="submit" style={{ background: '#2980b9', color: 'white', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: 'pointer', marginTop: 8 }}>Create HR</button>
-              <div className="result" style={{ color: 'green', marginTop: 8 }}>{hrResult}</div>
-            </form>
-            <hr />
-            <h3 style={{ color: '#2d3e50' }}>Create Employee User</h3>
-            <form onSubmit={handleCreateEmpUser}>
-              <label style={{ display: 'block', marginBottom: 8 }}>Username:<br />
-                <input type="text" value={empUserData.username} onChange={e => setEmpUserData({ ...empUserData, username: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
-              </label>
-              <label style={{ display: 'block', marginBottom: 8 }}>Password:<br />
-                <input type="password" value={empUserData.password} onChange={e => setEmpUserData({ ...empUserData, password: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
-              </label>
-              <label style={{ display: 'block', marginBottom: 8 }}>Employee ID:<br />
-                <input type="text" value={empUserData.employee_id} onChange={e => setEmpUserData({ ...empUserData, employee_id: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
-              </label>
-              <button type="submit" style={{ background: '#27ae60', color: 'white', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: 'pointer', marginTop: 8 }}>Create Employee User</button>
-              <div className="result" style={{ color: 'green', marginTop: 8 }}>{empUserResult}</div>
-            </form>
-          </div>
+          <>
+            {!homeRole && (
+              <div style={{ textAlign: 'center', marginBottom: 32 }}>
+                <h2 style={{ color: '#2d3e50' }}>Select Role</h2>
+                <button onClick={() => setHomeRole('hr')} style={{ background: '#2980b9', color: 'white', border: 'none', borderRadius: 4, padding: '12px 32px', fontSize: 18, marginRight: 24, cursor: 'pointer' }}>HR</button>
+                <button onClick={() => setHomeRole('employee')} style={{ background: '#27ae60', color: 'white', border: 'none', borderRadius: 4, padding: '12px 32px', fontSize: 18, cursor: 'pointer' }}>Employee</button>
+              </div>
+            )}
+            {homeRole === 'hr' && (
+              <div className="section">
+                <h2 style={{ color: '#2d3e50' }}>HR Login</h2>
+                <form onSubmit={handleLogin} style={{ marginBottom: 24 }}>
+                  <label style={{ display: 'block', marginBottom: 8 }}>Username:<br />
+                    <input type="text" value={loginData.username} onChange={e => setLoginData({ ...loginData, username: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+                  </label>
+                  <label style={{ display: 'block', marginBottom: 8 }}>Password:<br />
+                    <input type="password" value={loginData.password} onChange={e => setLoginData({ ...loginData, password: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+                  </label>
+                  <button type="submit" style={{ background: '#2d3e50', color: 'white', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: 'pointer', marginTop: 8 }}>Login</button>
+                  <div className="result" style={{ color: 'crimson', marginTop: 8 }}>{loginResult}</div>
+                </form>
+                <hr />
+                <h3 style={{ color: '#2d3e50' }}>Create HR User</h3>
+                <form onSubmit={handleCreateHr} style={{ marginBottom: 24 }}>
+                  <label style={{ display: 'block', marginBottom: 8 }}>Username:<br />
+                    <input type="text" value={hrData.username} onChange={e => setHrData({ ...hrData, username: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+                  </label>
+                  <label style={{ display: 'block', marginBottom: 8 }}>Password:<br />
+                    <input type="password" value={hrData.password} onChange={e => setHrData({ ...hrData, password: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+                  </label>
+                  <button type="submit" style={{ background: '#2980b9', color: 'white', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: 'pointer', marginTop: 8 }}>Create HR</button>
+                  <div className="result" style={{ color: 'green', marginTop: 8 }}>{hrResult}</div>
+                </form>
+                <div style={{ textAlign: 'center', margin: '16px 0' }}>
+                  <button onClick={() => setHomeRole('')} style={{ background: '#888', color: 'white', border: 'none', borderRadius: 4, padding: '6px 18px', cursor: 'pointer' }}>Back</button>
+                </div>
+              </div>
+            )}
+            {homeRole === 'employee' && (
+              <div className="section">
+                <h2 style={{ color: '#2d3e50' }}>Employee Login</h2>
+                <form onSubmit={handleLogin} style={{ marginBottom: 24 }}>
+                  <label style={{ display: 'block', marginBottom: 8 }}>Username:<br />
+                    <input type="text" value={loginData.username} onChange={e => setLoginData({ ...loginData, username: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+                  </label>
+                  <label style={{ display: 'block', marginBottom: 8 }}>Password:<br />
+                    <input type="password" value={loginData.password} onChange={e => setLoginData({ ...loginData, password: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+                  </label>
+                  <button type="submit" style={{ background: '#2d3e50', color: 'white', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: 'pointer', marginTop: 8 }}>Login</button>
+                  <div className="result" style={{ color: 'crimson', marginTop: 8 }}>{loginResult}</div>
+                </form>
+                <hr />
+                <h3 style={{ color: '#2d3e50' }}>Create Employee User</h3>
+                <form onSubmit={handleCreateEmpUser}>
+                  <label style={{ display: 'block', marginBottom: 8 }}>Username:<br />
+                    <input type="text" value={empUserData.username} onChange={e => setEmpUserData({ ...empUserData, username: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+                  </label>
+                  <label style={{ display: 'block', marginBottom: 8 }}>Password:<br />
+                    <input type="password" value={empUserData.password} onChange={e => setEmpUserData({ ...empUserData, password: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+                  </label>
+                  <label style={{ display: 'block', marginBottom: 8 }}>Employee ID:<br />
+                    <input type="text" value={empUserData.employee_id} onChange={e => setEmpUserData({ ...empUserData, employee_id: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+                  </label>
+                  <button type="submit" style={{ background: '#27ae60', color: 'white', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: 'pointer', marginTop: 8 }}>Create Employee User</button>
+                  <div className="result" style={{ color: 'green', marginTop: 8 }}>{empUserResult}</div>
+                </form>
+                <div style={{ textAlign: 'center', margin: '16px 0' }}>
+                  <button onClick={() => setHomeRole('')} style={{ background: '#888', color: 'white', border: 'none', borderRadius: 4, padding: '6px 18px', cursor: 'pointer' }}>Back</button>
+                </div>
+              </div>
+            )}
+          </>
         )}
         {token && role === 'employee' && (
           <div id="employeeSection">
