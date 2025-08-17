@@ -9,7 +9,10 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.use(cors());
+app.use(cors({
+  origin: 'https://backend-intern-assignemnt-sy8x.vercel.app', // your Vercel frontend URL
+  credentials: true
+}));
 // Serve static frontend
 app.use(express.static(path.join(__dirname, '../public')));
 
