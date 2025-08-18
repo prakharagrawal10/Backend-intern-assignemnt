@@ -58,6 +58,7 @@ function App() {
         localStorage.setItem('token', json.token);
         localStorage.setItem('role', json.role);
         localStorage.setItem('employeeId', json.employee || '');
+        setLoginData({ username: '', password: '' }); // Reset login form
       } else {
         setLoginResult(json.error || 'Login failed');
       }
@@ -81,6 +82,7 @@ function App() {
         body: JSON.stringify(hrData)
       });
       const json = await res.json();
+      if (res.ok) setHrData({ username: '', password: '' }); // Reset signup form
       setHrResult(res.ok ? 'HR user created!' : (json.error || 'Error'));
     } catch { setHrResult('Network error'); }
   };
@@ -206,8 +208,8 @@ function App() {
                       <div className="result" style={{ color: 'crimson', marginTop: 8 }}>{loginResult}</div>
                     </form>
                     <div style={{ textAlign: 'center', margin: '16px 0' }}>
-                      <button onClick={() => setHrPage('signup')} style={{ background: '#2980b9', color: 'white', border: 'none', borderRadius: 4, padding: '6px 18px', cursor: 'pointer', marginRight: 8 }}>Create HR Account</button>
-                      <button onClick={() => setHomeRole('')} style={{ background: '#888', color: 'white', border: 'none', borderRadius: 4, padding: '6px 18px', cursor: 'pointer' }}>Back</button>
+                      <button onClick={() => { setHrPage('signup'); setLoginData({ username: '', password: '' }); setLoginResult(''); }} style={{ background: '#2980b9', color: 'white', border: 'none', borderRadius: 4, padding: '6px 18px', cursor: 'pointer', marginRight: 8 }}>Create HR Account</button>
+                      <button onClick={() => { setHomeRole(''); setLoginData({ username: '', password: '' }); setLoginResult(''); }} style={{ background: '#888', color: 'white', border: 'none', borderRadius: 4, padding: '6px 18px', cursor: 'pointer' }}>Back</button>
                     </div>
                   </>
                 )}
@@ -225,8 +227,8 @@ function App() {
                       <div className="result" style={{ color: 'green', marginTop: 8 }}>{hrResult}</div>
                     </form>
                     <div style={{ textAlign: 'center', margin: '16px 0' }}>
-                      <button onClick={() => setHrPage('login')} style={{ background: '#2d3e50', color: 'white', border: 'none', borderRadius: 4, padding: '6px 18px', cursor: 'pointer', marginRight: 8 }}>Back to Login</button>
-                      <button onClick={() => setHomeRole('')} style={{ background: '#888', color: 'white', border: 'none', borderRadius: 4, padding: '6px 18px', cursor: 'pointer' }}>Home</button>
+                      <button onClick={() => { setHrPage('login'); setHrData({ username: '', password: '' }); setHrResult(''); }} style={{ background: '#2d3e50', color: 'white', border: 'none', borderRadius: 4, padding: '6px 18px', cursor: 'pointer', marginRight: 8 }}>Back to Login</button>
+                      <button onClick={() => { setHomeRole(''); setHrData({ username: '', password: '' }); setHrResult(''); }} style={{ background: '#888', color: 'white', border: 'none', borderRadius: 4, padding: '6px 18px', cursor: 'pointer' }}>Home</button>
                     </div>
                   </>
                 )}
@@ -300,7 +302,7 @@ function App() {
         {token && role === 'hr' && (
           <div id="hrSection">
             <div className="section">
-              <h2 style={{ color: '#2d3e50' }}>Add Employee & User</h2>
+              <h2 style={{ color: '#2d3e50' }}>Add Employee</h2>
               <form onSubmit={handleAddEmployee} style={{ marginBottom: 24 }}>
                 <label style={{ display: 'block', marginBottom: 8 }}>Name:<br />
                   <input type="text" value={addEmpData.name} onChange={e => setAddEmpData({ ...addEmpData, name: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
@@ -320,8 +322,8 @@ function App() {
                 <label style={{ display: 'block', marginBottom: 8 }}>Password:<br />
                   <input type="password" value={addEmpData.password} onChange={e => setAddEmpData({ ...addEmpData, password: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
                 </label>
-                <button type="submit" style={{ background: '#2d3e50', color: 'white', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: 'pointer', marginTop: 8 }}>Add Employee & User</button>
-                <div className="result" style={{ color: addEmpResult.startsWith('Employee and user added') ? 'green' : 'crimson', marginTop: 8 }}>{addEmpResult}</div>
+                <button type="submit" style={{ background: '#2d3e50', color: 'white', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: 'pointer', marginTop: 8 }}>Add Employee</button>
+                <div className="result" style={{ color: addEmpResult.startsWith('Employee and user added') || addEmpResult.startsWith('Employee added') ? 'green' : 'crimson', marginTop: 8 }}>{addEmpResult.replace('Employee and user added', 'Employee added')}</div>
               </form>
             </div>
             <div className="section">
