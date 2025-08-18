@@ -1,3 +1,15 @@
+// Get all leaves for the logged-in employee
+exports.getMyLeaves = async (req, res) => {
+  try {
+    // req.user.employee is set by auth middleware
+    const employeeId = req.user.employee;
+    if (!employeeId) return res.status(400).json({ error: 'Not an employee user.' });
+    const leaves = await LeaveRequest.find({ employee_id: employeeId }).sort({ start_date: -1 });
+    res.json(leaves);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch your leaves.' });
+  }
+};
 const LeaveRequest = require('../models/leaveRequest');
 const Employee = require('../models/employee');
 
