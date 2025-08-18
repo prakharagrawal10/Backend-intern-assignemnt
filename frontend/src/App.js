@@ -180,9 +180,20 @@ function App() {
   const [hrPage, setHrPage] = useState('login'); // 'login' or 'signup'
 
   return (
-    <div style={{ maxWidth: 700, margin: '40px auto', fontFamily: 'Segoe UI, Arial, sans-serif', background: '#f8f9fa', borderRadius: 10, boxShadow: '0 2px 12px #0001', padding: 0 }}>
+  <div style={{ maxWidth: 700, margin: '40px auto', fontFamily: 'Segoe UI, Arial, sans-serif', background: '#f8f9fa', borderRadius: 10, boxShadow: '0 2px 12px #0001', padding: 0, border: '1px solid #e0e0e0' }}>
       <Navbar token={token} role={role} logout={logout} />
       <div style={{ padding: 32 }}>
+        <style>{`
+          .section { margin-bottom: 36px; padding-bottom: 24px; border-bottom: 1px solid #e0e0e0; }
+          .section:last-child { border-bottom: none; }
+          input, select, textarea { font-size: 16px; }
+          button:hover { filter: brightness(0.95); box-shadow: 0 2px 8px #0002; }
+          table th, table td { padding: 8px 10px; text-align: left; }
+          table th { background: #34495e; color: #fff; }
+          table tr:nth-child(even) { background: #f4f6fa; }
+          table tr:hover { background: #eaf6ff; }
+          .result { min-height: 22px; }
+        `}</style>
         {!token && (
           <>
             {!homeRole && (
@@ -257,8 +268,8 @@ function App() {
         {token && role === 'employee' && (
           <div id="employeeSection">
             <div className="section">
-              <h2 style={{ color: '#2d3e50' }}>Apply for Leave</h2>
-              <form onSubmit={handleApplyLeave} style={{ marginBottom: 24 }}>
+              <h2 style={{ color: '#2d3e50', marginBottom: 18 }}>Apply for Leave</h2>
+              <form onSubmit={handleApplyLeave} style={{ marginBottom: 24, background: '#fff', borderRadius: 8, padding: 18, boxShadow: '0 1px 4px #0001' }}>
                 <label style={{ display: 'block', marginBottom: 8 }}>Start Date:<br />
                   <input type="date" value={leaveData.start_date} onChange={e => setLeaveData({ ...leaveData, start_date: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
                 </label>
@@ -273,28 +284,30 @@ function App() {
               </form>
             </div>
             <div className="section">
-              <h2 style={{ color: '#2d3e50' }}>Check Leave Balance</h2>
+              <h2 style={{ color: '#2d3e50', marginBottom: 18 }}>Check Leave Balance</h2>
               <button onClick={handleCheckBalance} style={{ background: '#2980b9', color: 'white', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: 'pointer', marginBottom: 8 }}>Check Balance</button>
               <div className="result" style={{ color: 'green', marginTop: 8 }}>{leaveBalance}</div>
             </div>
             <div className="section">
-              <h2 style={{ color: '#2d3e50' }}>My Leave Requests</h2>
+              <h2 style={{ color: '#2d3e50', marginBottom: 18 }}>My Leave Requests</h2>
               <button onClick={loadMyLeaves} style={{ background: '#27ae60', color: 'white', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: 'pointer', marginBottom: 8 }}>Refresh List</button>
               {myLeavesMsg && <div className="result" style={{ color: 'crimson', marginTop: 8 }}>{myLeavesMsg}</div>}
               {myLeaves.length > 0 && (
-                <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: 6, boxShadow: '0 1px 4px #0001' }}>
-                  <thead style={{ background: '#2d3e50', color: 'white' }}><tr><th>ID</th><th>Dates</th><th>Status</th><th>Reason</th></tr></thead>
-                  <tbody>
-                    {myLeaves.map(l => (
-                      <tr key={l._id} style={{ borderBottom: '1px solid #eee' }}>
-                        <td>{l._id}</td>
-                        <td>{l.start_date?.slice(0,10)} to {l.end_date?.slice(0,10)}</td>
-                        <td>{l.status}</td>
-                        <td>{l.reason || ''}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: 6, boxShadow: '0 1px 4px #0001', minWidth: 500 }}>
+                    <thead><tr><th>ID</th><th>Dates</th><th>Status</th><th>Reason</th></tr></thead>
+                    <tbody>
+                      {myLeaves.map(l => (
+                        <tr key={l._id} style={{ borderBottom: '1px solid #eee' }}>
+                          <td>{l._id}</td>
+                          <td>{l.start_date?.slice(0,10)} to {l.end_date?.slice(0,10)}</td>
+                          <td>{l.status}</td>
+                          <td>{l.reason || ''}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>
@@ -302,8 +315,8 @@ function App() {
         {token && role === 'hr' && (
           <div id="hrSection">
             <div className="section">
-              <h2 style={{ color: '#2d3e50' }}>Add Employee</h2>
-              <form onSubmit={handleAddEmployee} style={{ marginBottom: 24 }}>
+              <h2 style={{ color: '#2d3e50', marginBottom: 18 }}>Add Employee</h2>
+              <form onSubmit={handleAddEmployee} style={{ marginBottom: 24, background: '#fff', borderRadius: 8, padding: 18, boxShadow: '0 1px 4px #0001' }}>
                 <label style={{ display: 'block', marginBottom: 8 }}>Name:<br />
                   <input type="text" value={addEmpData.name} onChange={e => setAddEmpData({ ...addEmpData, name: e.target.value })} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
                 </label>
@@ -327,27 +340,29 @@ function App() {
               </form>
             </div>
             <div className="section">
-              <h2 style={{ color: '#2d3e50' }}>Pending Leave Requests</h2>
+              <h2 style={{ color: '#2d3e50', marginBottom: 18 }}>Pending Leave Requests</h2>
               <button onClick={loadPendingLeaves} style={{ background: '#27ae60', color: 'white', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: 'pointer', marginBottom: 8 }}>Refresh List</button>
               {pendingMsg && <div className="result" style={{ color: 'crimson', marginTop: 8 }}>{pendingMsg}</div>}
               {pendingLeaves.length > 0 && (
-                <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: 6, boxShadow: '0 1px 4px #0001' }}>
-                  <thead style={{ background: '#2d3e50', color: 'white' }}><tr><th>ID</th><th>Employee</th><th>Dates</th><th>Reason</th><th>Action</th></tr></thead>
-                  <tbody>
-                    {pendingLeaves.map(l => (
-                      <tr key={l._id} style={{ borderBottom: '1px solid #eee' }}>
-                        <td>{l._id}</td>
-                        <td>{l.employee_id?.name || ''} <br /><small>{l.employee_id?.email || ''}</small></td>
-                        <td>{l.start_date?.slice(0,10)} to {l.end_date?.slice(0,10)}</td>
-                        <td>{l.reason || ''}</td>
-                        <td>
-                          <button onClick={() => handleApprove(l._id)} style={{ background: '#2980b9', color: 'white', border: 'none', borderRadius: 4, padding: '6px 12px', cursor: 'pointer', marginRight: 6 }}>Approve</button>
-                          <button onClick={() => handleReject(l._id)} style={{ background: '#e74c3c', color: 'white', border: 'none', borderRadius: 4, padding: '6px 12px', cursor: 'pointer' }}>Reject</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: 6, boxShadow: '0 1px 4px #0001', minWidth: 600 }}>
+                    <thead><tr><th>ID</th><th>Employee</th><th>Dates</th><th>Reason</th><th>Action</th></tr></thead>
+                    <tbody>
+                      {pendingLeaves.map(l => (
+                        <tr key={l._id} style={{ borderBottom: '1px solid #eee' }}>
+                          <td>{l._id}</td>
+                          <td>{l.employee_id?.name || ''} <br /><small>{l.employee_id?.email || ''}</small></td>
+                          <td>{l.start_date?.slice(0,10)} to {l.end_date?.slice(0,10)}</td>
+                          <td>{l.reason || ''}</td>
+                          <td>
+                            <button onClick={() => handleApprove(l._id)} style={{ background: '#2980b9', color: 'white', border: 'none', borderRadius: 4, padding: '6px 12px', cursor: 'pointer', marginRight: 6 }}>Approve</button>
+                            <button onClick={() => handleReject(l._id)} style={{ background: '#e74c3c', color: 'white', border: 'none', borderRadius: 4, padding: '6px 12px', cursor: 'pointer' }}>Reject</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>
