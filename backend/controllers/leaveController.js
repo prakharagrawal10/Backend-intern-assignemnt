@@ -120,7 +120,14 @@ exports.rejectLeave = async (req, res) => {
 
 exports.getPendingLeaves = async (req, res) => {
   try {
-    const pendingLeaves = await LeaveRequest.find({ status: 'pending' }).populate('employee_id', 'name email department');
+    // Only show leaves for employees managed by this HR
+    const hrId = req.user && req.user.id;
+    if (!hrId) return res.status(403).json({ error: 'HR authentication required.' });
+    // Find employees managed by this HR
+    const employees = await Employee.find({ hr: hrId }).select('_id');
+    const employeeIds = employees.map(e => e._id);
+    const pendingLeaves = await LeaveRequest.find({ status: 'pending', employee_id: { $in: employeeIds } })
+      .populate('employee_id', 'name email department');
     res.json(pendingLeaves);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch pending leaves.' });

@@ -13,13 +13,16 @@ exports.addEmployeeWithUser = async (req, res) => {
     if (emailExists) return res.status(409).json({ error: 'Email already exists.' });
     const userExists = await User.findOne({ username });
     if (userExists) return res.status(409).json({ error: 'Username already exists.' });
-    // Create employee
-    const employee = new Employee({ name, email, department, joining_date });
-    await employee.save();
-    // Create user (role: employee)
-    const user = new User({ username, password, role: 'employee', employee: employee._id });
-    await user.save();
-    res.status(201).json({ employee, user });
+  // Link employee to HR (req.user.id is HR's user ID)
+  const hrId = req.user && req.user.id;
+  if (!hrId) return res.status(403).json({ error: 'HR authentication required.' });
+  // Create employee
+  const employee = new Employee({ name, email, department, joining_date, hr: hrId });
+  await employee.save();
+  // Create user (role: employee)
+  const user = new User({ username, password, role: 'employee', employee: employee._id });
+  await user.save();
+  res.status(201).json({ employee, user });
   } catch (err) {
     res.status(500).json({ error: 'Failed to add employee and user.' });
   }
